@@ -1,13 +1,8 @@
 "use client";
 
+import { IconTrash } from "@tabler/icons-react";
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { api } from "../../../../../convex/_generated/api";
-import { IconTrash } from "@tabler/icons-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,6 +14,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { api } from "../../../../../convex/_generated/api";
 
 export default function ContactsPage() {
   const contacts = useQuery(api.contacts.getContacts);

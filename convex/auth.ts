@@ -16,7 +16,7 @@ export type User = DataModel["users"]["document"];
 
 export const createAuth = (
   ctx: GenericCtx<DataModel>,
-  { optionsOnly } = { optionsOnly: false }
+  { optionsOnly } = { optionsOnly: false },
 ) => {
   return betterAuth({
     logger: {

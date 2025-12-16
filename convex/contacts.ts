@@ -1,7 +1,7 @@
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 import { mutation, query } from "./_generated/server";
 import { authComponent } from "./auth";
-import { internal } from "./_generated/api";
 
 export const addContact = mutation({
   args: {
@@ -61,7 +61,7 @@ export const resendInvite = mutation({
 
     const contact = contacts.find(
       (c) =>
-        (c as unknown as { contactEmail: string }).contactEmail === args.email
+        (c as unknown as { contactEmail: string }).contactEmail === args.email,
     );
     if (!contact) throw new Error("Contact not found");
 
@@ -90,7 +90,7 @@ export const verifyContact = mutation({
     const all = await ctx.db.query("trusted_contacts").collect();
     const contact = all.find(
       (c) =>
-        (c as unknown as { contactEmail: string }).contactEmail === args.email
+        (c as unknown as { contactEmail: string }).contactEmail === args.email,
     );
     if (!contact) {
       return { success: false };
@@ -123,7 +123,7 @@ export const deleteContact = mutation({
 
     const contact = contacts.find(
       (c) =>
-        (c as unknown as { contactEmail: string }).contactEmail === args.email
+        (c as unknown as { contactEmail: string }).contactEmail === args.email,
     );
     if (!contact) throw new Error("Contact not found");
 

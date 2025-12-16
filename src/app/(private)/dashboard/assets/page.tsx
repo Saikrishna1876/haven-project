@@ -12,12 +12,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { encryptData, generateAESKey } from "@/lib/encryption";
 import { api } from "../../../../../convex/_generated/api";
-import { Field } from "@/components/ui/field";
 
 export default function AssetsPage() {
   const assets = useQuery(api.vault.getAssets);

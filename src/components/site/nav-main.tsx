@@ -1,6 +1,7 @@
 "use client";
 
 import { IconChevronRight, type IconProps } from "@tabler/icons-react";
+import Link from "next/link";
 import {
   Collapsible,
   CollapsibleContent,
@@ -16,7 +17,6 @@ import {
   SidebarMenuSubItem,
   sidebarMenuButtonVariants,
 } from "@/components/ui/sidebar";
-import Link from "next/link";
 
 export function NavMain({
   items,
@@ -72,7 +72,7 @@ export function NavMain({
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>
-          )
+          ),
         )}
       </SidebarMenu>
     </SidebarGroup>

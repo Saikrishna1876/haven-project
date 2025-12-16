@@ -1,10 +1,10 @@
 "use client";
 import {
-  IconHome,
   IconFiles,
-  IconUsers,
   IconGavel,
   IconHistory,
+  IconHome,
+  IconUsers,
 } from "@tabler/icons-react";
 import Image from "next/image";
 import { NavMain } from "@/components/site/nav-main";
@@ -86,7 +86,7 @@ export function AppSidebar({
               <div
                 className={cn(
                   "flex-1 text-left text-sm leading-tight",
-                  !open ? "hidden" : "grid"
+                  !open ? "hidden" : "grid",
                 )}
               >
                 <span className="truncate font-medium">Haven</span>
