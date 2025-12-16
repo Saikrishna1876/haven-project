@@ -12,6 +12,8 @@ const siteUrl = process.env.SITE_URL;
 // as well as helper methods for general use.
 export const authComponent = createClient<DataModel>(components.betterAuth);
 
+export type User = DataModel["users"]["document"];
+
 export const createAuth = (
   ctx: GenericCtx<DataModel>,
   { optionsOnly } = { optionsOnly: false }

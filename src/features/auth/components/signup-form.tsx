@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import SocialLogin from "./social-login";
+import { useRouter } from "next/navigation";
 
 type SignUpFormValues = {
   name: string;
@@ -27,6 +28,7 @@ export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const { control, handleSubmit, formState } = useForm<SignUpFormValues>({
     defaultValues: {
@@ -49,6 +51,8 @@ export function SignupForm({
         return;
       }
       toast.success(`Signup successful.`);
+
+      router.push("/dashboard");
     });
   };
 
