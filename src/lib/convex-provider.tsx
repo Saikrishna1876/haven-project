@@ -10,7 +10,7 @@ const convex = new ConvexReactClient(
   {
     // Optionally pause queries until the user is authenticated
     expectAuth: true,
-  }
+  },
 );
 
 export function ConvexClientProvider({ children }: { children: ReactNode }) {

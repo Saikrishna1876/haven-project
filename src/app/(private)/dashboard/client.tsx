@@ -1,17 +1,14 @@
 "use client";
-import { Button } from "@/components/ui/button";
-import { authClient } from "@/lib/auth-client";
 
-function Client() {
-  return (
-    <Button
-      onClick={async () => {
-        await authClient.signOut();
-      }}
-    >
-      Sign out
-    </Button>
-  );
+import { useQuery } from "convex/react";
+import { AppSidebar } from "@/components/site/app-sidebar";
+import { api } from "../../../../convex/_generated/api";
+
+function SidebarClient() {
+  const user = useQuery(api.auth.getCurrentUser);
+
+  if (!user) return null;
+  return <AppSidebar user={user} />;
 }
 
-export default Client;
+export default SidebarClient;

@@ -1,23 +1,23 @@
 "use client";
 
+import { IconArrowDownToArc, IconLogout } from "@tabler/icons-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuGroup,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
   SidebarMenu,
-  sidebarMenuButtonVariants,
   SidebarMenuItem,
+  sidebarMenuButtonVariants,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { IconArrowDownToArc, IconLogout } from "@tabler/icons-react";
 import type { User } from "../../../convex/auth";
 
 export function NavUser({ user }: { user: User }) {

@@ -1,4 +1,12 @@
 "use client";
+import {
+  IconHome,
+  IconFiles,
+  IconUsers,
+  IconGavel,
+  IconHistory,
+} from "@tabler/icons-react";
+import Image from "next/image";
 import { NavMain } from "@/components/site/nav-main";
 import { NavUser } from "@/components/site/nav-user";
 import {
@@ -12,105 +20,43 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
-import {
-  IconBook2,
-  IconBottle,
-  IconSettings,
-  IconTerminal,
-} from "@tabler/icons-react";
-import type { User } from "../../../convex/auth";
-import Image from "next/image";
-import favicon from "../../app/favicon.svg";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import type { User } from "../../../convex/auth";
+import favicon from "../../app/favicon.svg";
+import { Separator } from "../ui/separator";
 
 // This is sample data.
 const data = {
   navMain: [
     {
-      title: "Playground",
-      url: "#",
-      icon: IconTerminal,
+      title: "Home",
+      url: "/dashboard",
+      icon: IconHome,
       isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
     },
     {
-      title: "Models",
-      url: "#",
-      icon: IconBottle,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
+      title: "Assets",
+      url: "/dashboard/assets",
+      icon: IconFiles,
+      isActive: false,
     },
     {
-      title: "Documentation",
-      url: "#",
-      icon: IconBook2,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
+      title: "Trusted Contacts",
+      url: "/dashboard/contacts",
+      icon: IconUsers,
+      isActive: false,
     },
     {
-      title: "Settings",
-      url: "#",
-      icon: IconSettings,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
+      title: "Rules",
+      url: "/dashboard/rules",
+      icon: IconGavel,
+      isActive: false,
+    },
+    {
+      title: "Audit Logs",
+      url: "/dashboard/audit",
+      icon: IconHistory,
+      isActive: false,
     },
   ],
 };
@@ -128,8 +74,14 @@ export function AppSidebar({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <div className="bg-white text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                <Image src={favicon} alt="Logo" width={40} height={40} />
+              <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                <Image
+                  src={favicon}
+                  alt="Logo"
+                  className="invert"
+                  width={40}
+                  height={40}
+                />
               </div>
               <div
                 className={cn(
@@ -143,6 +95,7 @@ export function AppSidebar({
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+      <Separator />
       <SidebarContent>
         <NavMain items={data.navMain} />
       </SidebarContent>

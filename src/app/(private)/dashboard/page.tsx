@@ -1,63 +1,62 @@
 "use client";
 
-import { AppSidebar } from "@/components/site/app-sidebar";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { IconFiles, IconHistory, IconUsers } from "@tabler/icons-react";
 import { useQuery } from "convex/react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { api } from "../../../../convex/_generated/api";
 
 export default function Page() {
-  const user = useQuery(api.auth.getCurrentUser);
-
-  if (!user) return null;
+  const assets = useQuery(api.vault.getAssets);
+  const contacts = useQuery(api.contacts.getContacts);
+  const logs = useQuery(api.audit.getLogs);
 
   return (
-    <SidebarProvider>
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator
-              orientation="vertical"
-              className="mr-2 data-[orientation=vertical]:h-8"
-            />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">
-                    Building Your Application
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
-        </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div className="bg-muted/50 aspect-video rounded-xl" />
-            <div className="bg-muted/50 aspect-video rounded-xl" />
-            <div className="bg-muted/50 aspect-video rounded-xl" />
-          </div>
-          <div className="bg-muted/50 min-h-screen flex-1 rounded-xl md:min-h-min" />
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+    <div className="p-6 space-y-6">
+      <h1 className="text-2xl font-bold">Dashboard Overview</h1>
+      <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Assets</CardTitle>
+            <IconFiles className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{assets?.length || 0}</div>
+            <p className="text-xs text-muted-foreground">
+              Secured in your vault
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Trusted Contacts
+            </CardTitle>
+            <IconUsers className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{contacts?.length || 0}</div>
+            <p className="text-xs text-muted-foreground">
+              Verified executors & viewers
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Last Activity</CardTitle>
+            <IconHistory className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-sm font-bold">
+              {logs && logs.length > 0
+                ? new Date(logs[0].timestamp).toLocaleDateString()
+                : "No activity"}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {logs && logs.length > 0 ? logs[0].action : "N/A"}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 }
