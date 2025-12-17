@@ -11,25 +11,45 @@ export default defineSchema({
     .index("by_auth_user_id", ["authUserId"]),
 
   vault_items: defineTable({
-    userId: v.string(), // Link to our users table or auth user id. Let's use authUserId for simplicity in queries if we have it, or our user ID.
-    // Let's use the ID from our `users` table if we want relational integrity, or just string if we want flexibility.
-    // Given the guide, let's use string to store the User ID (likely the one from this schema or auth).
-    // I'll use the ID from the `users` table in this schema for better relational modeling if I was using v.id(),
-    // but since I might query by auth ID, let's stick to string and store the authUserId.
-    // Actually, let's just use the `users` table ID.
-    // But wait, the guide implies `users` table IS the user table.
-    // Let's assume `userId` refers to the `users` document ID in this schema.
-    // But for simplicity with `better-auth`, I'll store `authUserId` in `users` and use `users._id` for relations?
-    // Or just use `authUserId` everywhere?
-    // Let's use `userId` as a string which holds the `better-auth` user ID. This is the most robust way to link without syncing issues.
-    // So `users` table is just for extra profile data (publicKey).
-    // And `vault_items` links to `userId` (auth id).
-    type: v.string(),
+    userId: v.string(), // Link to our users table or auth user id.
+    // Provider info to support accounts from Google, Microsoft, Apple, etc.
+    provider: v.string(), // e.g. 'google', 'microsoft', 'apple', 'custom'
+    providerAccountId: v.optional(v.string()), // account id / identifier on the provider side
+
+    // Human-friendly name for the vault entry (email account, service name, etc.)
     name: v.string(),
-    metadata: v.any(),
+
+    // Provider- or entry-specific metadata (e.g. last sign-in IP, creation date on provider, scopes)
+    metadata: v.optional(v.any()),
+
+    // Encrypted blob containing secrets / credentials for the vault item
     encryptedPayload: v.string(),
+
+    // When this vault item was created in our system
     createdAt: v.number(),
-  }).index("by_user", ["userId"]),
+
+    // Generalized recovery information — use a structured object here so the UI and server logic
+    // can understand available recovery factors for the provider. Examples of keys this object
+    // can contain: recoveryPhone, recoveryEmail, backupCodes (stored elsewhere encrypted),
+    // authAppRegistered, securityKeys, trustedDeviceSignals, lastKnownDeviceInfo, deletedAtOnProvider,
+    // appealTicket, etc.
+    // Keep it as `any` to allow provider-specific shapes while remaining typed in runtime code.
+    recoveryMethods: v.optional(v.any()),
+
+    // Convenience fields for status tracking and auditing
+    recoveryStatus: v.optional(
+      v.union(
+        v.literal("healthy"),
+        v.literal("at_risk"),
+        v.literal("unverified")
+      )
+    ),
+    lastRecoveryAttemptAt: v.optional(v.number()),
+    lastVerifiedAt: v.optional(v.number()),
+    isDeleted: v.optional(v.boolean()),
+  })
+    .index("by_user", ["userId"])
+    .index("by_provider", ["provider"]),
 
   trusted_contacts: defineTable({
     userId: v.string(),

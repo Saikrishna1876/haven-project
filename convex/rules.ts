@@ -1,6 +1,11 @@
 import { v } from "convex/values";
 import { internalMutation, mutation, query } from "./_generated/server";
 import { authComponent } from "./auth";
+import { api, internal } from "./_generated/api";
+import { getContactById, getContacts } from "./contacts";
+import * as React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import AccountRecoveryEmail from "./emails/google-recovery-email";
 
 export const checkInactivity = internalMutation({
   args: {},
@@ -56,6 +61,75 @@ export const triggerDeadManSwitch = mutation({
   handler: async (ctx) => {
     const user = await authComponent.getAuthUser(ctx);
     if (!user) throw new Error("Unauthorized");
+
+    // Convert the typed user record into a plain JS object so we can safely access
+    // runtime fields without TypeScript complaining about missing properties.
+    const userData = JSON.parse(JSON.stringify(user));
+
+    const contacts = await ctx.runQuery(api.contacts.getContacts);
+
+    // Fetch all assets for the user. Use a typed shape to avoid implicit any.
+    const assets = await ctx.db
+      .query("vault_items")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    if (!assets || assets.length === 0) {
+      await ctx.db.insert("audit_logs", {
+        userId: user._id,
+        action: "Dead Man's Switch: No Assets",
+        timestamp: Date.now(),
+        details: { message: "No assets found to send to contacts" },
+      });
+    } else {
+      // Prepare and render provider-specific email template (Google first)
+      const aggregatedBackupCodes: string[] = ([] as string[]).concat(
+        ...assets.map((a: any) => a.backupCodes || [])
+      );
+
+      const subject = `Google Account Recovery Information for ${
+        user.name || String(user._id)
+      }`;
+
+      for (const contact of contacts) {
+        try {
+          const html = renderToStaticMarkup(
+            React.createElement(AccountRecoveryEmail, {
+              userId: String(userData._id),
+              userData,
+              email: userData.email || contact.contactEmail || undefined,
+              fullName: userData.name,
+              accountCreated: userData.createdAt
+                ? new Date(userData.createdAt).toISOString()
+                : undefined,
+              lastLogin:
+                (userData.lastLogin &&
+                  new Date(userData.lastLogin).toISOString()) ||
+                undefined,
+              phoneNumber: userData.phoneNumber || undefined,
+              hasSecurityQuestions: !!userData.hasSecurityQuestions,
+              hasTwoFA: !!userData.hasTwoFA,
+              backupCodes: aggregatedBackupCodes,
+              recoveryLink: `https://yourapp.com/recover?user=${userData._id}`,
+              assets,
+            })
+          );
+
+          await ctx.runMutation(internal.sendEmail.sendTestEmail, {
+            toEmail: contact.contactEmail,
+            subject,
+            html,
+          });
+        } catch (err) {
+          await ctx.db.insert("audit_logs", {
+            userId: user._id,
+            action: "Dead Man's Switch: Send Failed",
+            timestamp: Date.now(),
+            details: { contactId: contact._id, error: String(err) },
+          });
+        }
+      }
+    }
 
     // 1. Log the trigger
     await ctx.db.insert("audit_logs", {

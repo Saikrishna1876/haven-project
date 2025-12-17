@@ -47,6 +47,21 @@ export const getContacts = query({
   },
 });
 
+export const getContactById = query({
+  args: { contactId: v.id("trusted_contacts") },
+  handler: async (ctx, args) => {
+    const user = await authComponent.getAuthUser(ctx);
+    if (!user) throw new Error("Unauthorized");
+
+    const contact = await ctx.db.get(args.contactId);
+    if (!contact || contact.userId !== user._id) {
+      throw new Error("Contact not found");
+    }
+
+    return contact;
+  },
+});
+
 export const resendInvite = mutation({
   args: { email: v.string() },
   handler: async (ctx, args) => {
@@ -61,7 +76,7 @@ export const resendInvite = mutation({
 
     const contact = contacts.find(
       (c) =>
-        (c as unknown as { contactEmail: string }).contactEmail === args.email,
+        (c as unknown as { contactEmail: string }).contactEmail === args.email
     );
     if (!contact) throw new Error("Contact not found");
 
@@ -90,7 +105,7 @@ export const verifyContact = mutation({
     const all = await ctx.db.query("trusted_contacts").collect();
     const contact = all.find(
       (c) =>
-        (c as unknown as { contactEmail: string }).contactEmail === args.email,
+        (c as unknown as { contactEmail: string }).contactEmail === args.email
     );
     if (!contact) {
       return { success: false };
@@ -123,7 +138,7 @@ export const deleteContact = mutation({
 
     const contact = contacts.find(
       (c) =>
-        (c as unknown as { contactEmail: string }).contactEmail === args.email,
+        (c as unknown as { contactEmail: string }).contactEmail === args.email
     );
     if (!contact) throw new Error("Contact not found");
 

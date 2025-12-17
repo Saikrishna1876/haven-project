@@ -12,13 +12,30 @@ export const sendTestEmail = internalMutation({
     toEmail: v.string(),
     subject: v.string(),
     html: v.string(),
+    // optional attachments (we'll render links to them in the email body)
+    attachments: v.optional(v.array(v.any())),
   },
   handler: async (ctx, args) => {
+    // If attachments were provided, append a small list of links to the HTML body.
+    let html = args.html;
+    if (args.attachments && args.attachments.length > 0) {
+      const attachmentsHtml = `<h3>Attachments</h3><ul>${args.attachments
+        .map(
+          (a: any) => `
+          <li>${a.name || "unnamed"}${
+            a.url ? ` - <a href=\"${a.url}\">link</a>` : ""
+          }</li>
+        `
+        )
+        .join("")}</ul>`;
+      html = `${html}${attachmentsHtml}`;
+    }
+
     await resend.sendEmail(ctx, {
       from: "Me <onboarding@resend.dev>",
       to: args.toEmail,
       subject: args.subject,
-      html: args.html,
+      html,
     });
   },
 });
