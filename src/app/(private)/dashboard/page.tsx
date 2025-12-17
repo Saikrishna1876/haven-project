@@ -1,18 +1,33 @@
 "use client";
 
 import { IconFiles, IconHistory, IconUsers } from "@tabler/icons-react";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { api } from "../../../../convex/_generated/api";
 
 export default function Page() {
+  const user = useQuery(api.auth.getCurrentUser);
   const assets = useQuery(api.vault.getAssets);
   const contacts = useQuery(api.contacts.getContacts);
   const logs = useQuery(api.audit.getLogs);
+  const resetInactivity = useMutation(api.rules.resetInactivity);
+  if (!user) {
+    return <div>Please log in to view your dashboard.</div>;
+  }
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Dashboard Overview</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Dashboard Overview</h1>
+        <Button
+          onClick={() =>
+            resetInactivity({ userId: user?._id as unknown as any })
+          }
+        >
+          Reset Inactivity
+        </Button>
+      </div>
       <div className="grid auto-rows-min gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

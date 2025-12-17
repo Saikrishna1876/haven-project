@@ -3,6 +3,7 @@
 import { IconMail, IconPlus, IconTrash } from "@tabler/icons-react";
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -13,6 +14,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Field } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -21,21 +24,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { encryptData, generateAESKey } from "@/lib/encryption";
 import { api } from "../../../../../convex/_generated/api";
 import type { Id } from "../../../../../convex/_generated/dataModel";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from "@/components/ui/table";
 
 type BackupItem = {
   id: number;
@@ -87,12 +87,12 @@ export default function AssetsPage() {
   const updateBackupRow = (
     id: number,
     field: "method" | "details",
-    value: string
+    value: string,
   ) =>
     setNewAsset((prev) => ({
       ...prev,
       twoFactorBackupsItems: prev.twoFactorBackupsItems.map((r: any) =>
-        r.id === id ? { ...r, [field]: value } : r
+        r.id === id ? { ...r, [field]: value } : r,
       ),
     }));
 
@@ -100,7 +100,7 @@ export default function AssetsPage() {
     setNewAsset((prev) => ({
       ...prev,
       twoFactorBackupsItems: prev.twoFactorBackupsItems.filter(
-        (r: any) => r.id !== id
+        (r: any) => r.id !== id,
       ),
     }));
 
@@ -302,7 +302,7 @@ export default function AssetsPage() {
                                         .map(
                                           (word: string) =>
                                             word.charAt(0).toUpperCase() +
-                                            word.slice(1)
+                                            word.slice(1),
                                         )
                                         .join(" ")}
                                     </SelectTrigger>
@@ -326,7 +326,7 @@ export default function AssetsPage() {
                                       updateBackupRow(
                                         item.id,
                                         "details",
-                                        e.target.value
+                                        e.target.value,
                                       )
                                     }
                                     placeholder="Enter codes or notes (do not store live verification codes)"

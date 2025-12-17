@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { insertAuditLog } from "./audit";
 import { authComponent } from "./auth";
 
 export const addAsset = mutation({
@@ -28,11 +29,9 @@ export const addAsset = mutation({
     });
 
     // Log action
-    await ctx.db.insert("audit_logs", {
-      userId: user._id,
-      action: "Asset Added",
-      timestamp: Date.now(),
-      details: { assetName: args.name, provider: args.provider },
+    await insertAuditLog(ctx, user._id, "Asset Added", {
+      assetName: args.name,
+      provider: args.provider,
     });
   },
 });
@@ -65,11 +64,9 @@ export const updateAsset = mutation({
     await ctx.db.patch(args.id, updates);
 
     // Log action
-    await ctx.db.insert("audit_logs", {
-      userId: user._id,
-      action: "Asset Updated",
-      timestamp: Date.now(),
-      details: { assetId: args.id, updates },
+    await insertAuditLog(ctx, user._id, "Asset Updated", {
+      assetId: args.id,
+      updates,
     });
   },
 });
@@ -100,11 +97,9 @@ export const deleteAsset = mutation({
 
     await ctx.db.delete(args.id);
 
-    await ctx.db.insert("audit_logs", {
-      userId: user._id,
-      action: "Asset Deleted",
-      timestamp: Date.now(),
-      details: { assetId: args.id, provider: asset.provider },
+    await insertAuditLog(ctx, user._id, "Asset Deleted", {
+      assetId: args.id,
+      provider: asset.provider,
     });
   },
 });

@@ -1,17 +1,17 @@
-import * as React from "react";
 import {
   Body,
   Container,
   Head,
   Heading,
+  Hr,
   Html,
   Link,
   Preview,
   Section,
-  Text,
   Tailwind,
-  Hr,
+  Text,
 } from "@react-email/components";
+import type * as React from "react";
 
 interface Asset {
   _id?: string;

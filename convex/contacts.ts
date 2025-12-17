@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { mutation, query } from "./_generated/server";
+import { insertAuditLog } from "./audit";
 import { authComponent } from "./auth";
 
 export const addContact = mutation({
@@ -25,12 +26,7 @@ export const addContact = mutation({
       verificationStatus: "pending",
     });
 
-    await ctx.db.insert("audit_logs", {
-      userId: user._id,
-      action: "Contact Added",
-      timestamp: Date.now(),
-      details: { email: args.email },
-    });
+    await insertAuditLog(ctx, user._id, "Contact Added", { email: args.email });
   },
 });
 
@@ -76,7 +72,7 @@ export const resendInvite = mutation({
 
     const contact = contacts.find(
       (c) =>
-        (c as unknown as { contactEmail: string }).contactEmail === args.email
+        (c as unknown as { contactEmail: string }).contactEmail === args.email,
     );
     if (!contact) throw new Error("Contact not found");
 
@@ -89,11 +85,8 @@ export const resendInvite = mutation({
       }/verify?email=${encodeURIComponent(args.email)}">here</a>.`,
     });
 
-    await ctx.db.insert("audit_logs", {
-      userId: user._id,
-      action: "Contact Invite Resent",
-      timestamp: Date.now(),
-      details: { email: args.email },
+    await insertAuditLog(ctx, user._id, "Contact Invite Resent", {
+      email: args.email,
     });
   },
 });
@@ -105,7 +98,7 @@ export const verifyContact = mutation({
     const all = await ctx.db.query("trusted_contacts").collect();
     const contact = all.find(
       (c) =>
-        (c as unknown as { contactEmail: string }).contactEmail === args.email
+        (c as unknown as { contactEmail: string }).contactEmail === args.email,
     );
     if (!contact) {
       return { success: false };
@@ -113,11 +106,8 @@ export const verifyContact = mutation({
 
     await ctx.db.patch(contact._id, { verificationStatus: "verified" });
 
-    await ctx.db.insert("audit_logs", {
-      userId: contact.userId,
-      action: "Contact Verified",
-      timestamp: Date.now(),
-      details: { email: args.email },
+    await insertAuditLog(ctx, contact.userId, "Contact Verified", {
+      email: args.email,
     });
 
     return { success: true };
@@ -138,18 +128,15 @@ export const deleteContact = mutation({
 
     const contact = contacts.find(
       (c) =>
-        (c as unknown as { contactEmail: string }).contactEmail === args.email
+        (c as unknown as { contactEmail: string }).contactEmail === args.email,
     );
     if (!contact) throw new Error("Contact not found");
 
     // Delete the contact
     await ctx.db.delete(contact._id);
 
-    await ctx.db.insert("audit_logs", {
-      userId: user._id,
-      action: "Contact Deleted",
-      timestamp: Date.now(),
-      details: { email: args.email },
+    await insertAuditLog(ctx, user._id, "Contact Deleted", {
+      email: args.email,
     });
   },
 });

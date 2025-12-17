@@ -1,16 +1,14 @@
-import * as React from "react";
 import {
-  Html,
-  Head,
   Body,
-  Container,
-  Section,
-  Text,
   Button,
+  Container,
+  Head,
   Hr,
-  Tailwind,
+  Html,
   Preview,
-  Heading,
+  Section,
+  Tailwind,
+  Text,
 } from "@react-email/components";
 
 const UserActivityCheckEmail = (props: {
