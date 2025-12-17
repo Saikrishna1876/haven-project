@@ -6,14 +6,8 @@ const crons = cronJobs();
 
 crons.interval(
   "check-inactivity",
-  { hours: 1 }, // Run every hour
+  { hours: 24 }, // Run every hour
   internal.rules.checkInactivity,
-);
-
-crons.interval(
-  "send-reminders",
-  { hours: 24 }, // Run every 24 hours
-  internal.rules.sendReminders,
 );
 
 // Clean up old emails from the Resend component

@@ -1,8 +1,8 @@
 "use client";
 
-import { IconEye, IconView360, IconViewfinder } from "@tabler/icons-react";
+import { IconEye } from "@tabler/icons-react";
 import { useQuery } from "convex/react";
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import AssetView from "@/components/audit/AssetView";
 import ContactView from "@/components/audit/ContactView";
 import RuleView from "@/components/audit/RuleView";
@@ -184,15 +184,13 @@ export default function AuditPage() {
 
               <div className="mt-4">
                 {/* Render domain-specific read-only forms based on action */}
-                {selectedLog &&
-                  selectedLog.action.toLowerCase().includes("asset") && (
-                    <AssetView data={selectedLog.details} />
-                  )}
+                {selectedLog?.action.toLowerCase().includes("asset") && (
+                  <AssetView data={selectedLog.details} />
+                )}
 
-                {selectedLog &&
-                  selectedLog.action.toLowerCase().includes("vault") && (
-                    <VaultView data={selectedLog.details} />
-                  )}
+                {selectedLog?.action.toLowerCase().includes("vault") && (
+                  <VaultView data={selectedLog.details} />
+                )}
 
                 {selectedLog &&
                   (selectedLog.action.toLowerCase().includes("contact") ||
@@ -209,10 +207,9 @@ export default function AuditPage() {
                     />
                   )}
 
-                {selectedLog &&
-                  selectedLog.action.toLowerCase().includes("rule") && (
-                    <RuleView data={selectedLog.details} />
-                  )}
+                {selectedLog?.action.toLowerCase().includes("rule") && (
+                  <RuleView data={selectedLog.details} />
+                )}
               </div>
 
               <DialogFooter>

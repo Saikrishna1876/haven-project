@@ -1,6 +1,6 @@
 "use client";
 
-import { IconMail, IconPlus, IconTrash } from "@tabler/icons-react";
+import { IconTrash } from "@tabler/icons-react";
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -20,9 +20,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import {
   Table,
@@ -63,7 +61,6 @@ export default function AssetsPage() {
   const [isOpen, setIsOpen] = useState(false);
   const [editingAssetId, setEditingAssetId] =
     useState<Id<"vault_items"> | null>(null);
-  const [isScanning, setIsScanning] = useState(false);
   const [newAsset, setNewAsset] = useState<NewAsset>({
     name: "",
     type: "",
@@ -107,8 +104,8 @@ export default function AssetsPage() {
   const handleAddAsset = async () => {
     // Simulate client-side encryption
     const key = await generateAESKey();
-    const encrypted = await encryptData(newAsset.encryptedPayload, key);
 
+    // Build recoveryMethods object when applicable
     const recoveryMethods =
       newAsset.name === "google"
         ? {
@@ -119,12 +116,18 @@ export default function AssetsPage() {
           }
         : undefined;
 
+    const plaintextToEncrypt = JSON.stringify({
+      recoveryMethods: recoveryMethods ?? null,
+    });
+
+    const encrypted = await encryptData(plaintextToEncrypt, key);
+
     const payload = {
       provider: newAsset.name || "custom",
       providerAccountId: undefined,
       name: newAsset.name,
       metadata: { info: newAsset.metadata },
-      recoveryMethods,
+      // recoveryMethods are stored inside `encryptedPayload` now
       encryptedPayload: encrypted,
     };
 
@@ -135,7 +138,6 @@ export default function AssetsPage() {
         name: payload.name,
         metadata: payload.metadata,
         encryptedPayload: payload.encryptedPayload,
-        recoveryMethods: payload.recoveryMethods,
       });
     } else {
       // Create new asset

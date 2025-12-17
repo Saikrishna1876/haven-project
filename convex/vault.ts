@@ -1,7 +1,10 @@
 import { v } from "convex/values";
+import type { DataModel } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { insertAuditLog } from "./audit";
 import { authComponent } from "./auth";
+
+export type Asset = DataModel["vault_items"]["document"];
 
 export const addAsset = mutation({
   args: {
@@ -53,7 +56,17 @@ export const updateAsset = mutation({
       throw new Error("Asset not found or unauthorized");
     }
 
-    const updates: any = {};
+    const updates: {
+      name: string;
+      metadata: object;
+      encryptedPayload: string;
+      recoveryMethods: object;
+    } = {
+      name: "",
+      metadata: {},
+      encryptedPayload: "",
+      recoveryMethods: {},
+    };
     if (args.name !== undefined) updates.name = args.name;
     if (args.metadata !== undefined) updates.metadata = args.metadata;
     if (args.encryptedPayload !== undefined)

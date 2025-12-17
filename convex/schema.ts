@@ -2,17 +2,10 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
-  users: defineTable({
-    email: v.string(),
-    publicKey: v.optional(v.string()),
-    authUserId: v.optional(v.string()), // Link to better-auth user ID
-    // Number of days the user has been inactive. Default is 0; code will
-    // initialize/reset this field when creating users or when activity occurs.
-    inactive_for_days: v.optional(v.number()),
-  })
-    .index("by_email", ["email"])
-    .index("by_auth_user_id", ["authUserId"]),
-
+  user_inactivity_checks: defineTable({
+    userId: v.string(),
+    lastCheckedAt: v.number(),
+  }).index("by_user", ["userId"]),
   vault_items: defineTable({
     userId: v.string(), // Link to our users table or auth user id.
     // Provider info to support accounts from Google, Microsoft, Apple, etc.

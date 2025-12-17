@@ -1,5 +1,3 @@
-import React from "react";
-
 type Props = { data: any };
 
 export default function VaultView({ data }: Props) {

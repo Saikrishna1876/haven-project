@@ -15,13 +15,10 @@ export async function encryptData(data: string, key: string): Promise<string> {
   return `enc_${key.substring(0, 4)}_${encoded}`;
 }
 
-export async function decryptData(
-  encryptedData: string,
-  key: string,
-): Promise<string> {
+export function decryptData(encryptedData: string, key: string) {
   if (!encryptedData.startsWith(`enc_${key.substring(0, 4)}_`)) {
     throw new Error("Invalid key or data");
   }
   const encoded = encryptedData.split("_")[2];
-  return atob(encoded);
+  return JSON.parse(atob(encoded));
 }

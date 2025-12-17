@@ -1,5 +1,6 @@
 import type { GenericMutationCtx } from "convex/server";
-import { query } from "./_generated/server";
+import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
 import { authComponent } from "./auth";
 
 export const getLogs = query({
@@ -19,9 +20,9 @@ export const getLogs = query({
 // Helper to create an audit log and reset the user's inactivity counter.
 export async function insertAuditLog(
   ctx: GenericMutationCtx<any>,
-  userId: any,
+  userId: string,
   action: string,
-  details?: any,
+  details?: object,
 ) {
   await ctx.db.insert("audit_logs", {
     userId,
@@ -29,12 +30,17 @@ export async function insertAuditLog(
     timestamp: Date.now(),
     details,
   });
-
-  // Try to reset the user's inactive_for_days field to 0. If the user record
-  // does not exist or patch fails, swallow the error (non-fatal).
-  try {
-    await ctx.db.patch(userId, { inactive_for_days: 0 });
-  } catch {
-    // ignore
-  }
 }
+
+export const insertAuditLogMutation = mutation({
+  args: {
+    action: v.string(),
+    details: v.optional(v.any()),
+  },
+  handler: async (ctx, args) => {
+    const user = await authComponent.getAuthUser(ctx);
+    if (!user) throw new Error("Unauthorized");
+
+    await insertAuditLog(ctx, user._id, args.action, args.details);
+  },
+});

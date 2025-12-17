@@ -10,8 +10,10 @@ export default function Page() {
   const user = useQuery(api.auth.getCurrentUser);
   const assets = useQuery(api.vault.getAssets);
   const contacts = useQuery(api.contacts.getContacts);
-  const logs = useQuery(api.audit.getLogs);
-  const resetInactivity = useMutation(api.rules.resetInactivity);
+  const inactivityCheck = useQuery(
+    api.userInactivityChecks.fetchUserInactivityCheck,
+  );
+  const resetInactivity = useMutation(api.userInactivityChecks.resetInactivity);
   if (!user) {
     return <div>Please log in to view your dashboard.</div>;
   }
@@ -20,13 +22,7 @@ export default function Page() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Dashboard Overview</h1>
-        <Button
-          onClick={() =>
-            resetInactivity({ userId: user?._id as unknown as any })
-          }
-        >
-          Reset Inactivity
-        </Button>
+        <Button onClick={() => resetInactivity()}>Reset Inactivity</Button>
       </div>
       <div className="grid auto-rows-min gap-4 md:grid-cols-3">
         <Card>
@@ -61,14 +57,10 @@ export default function Page() {
             <IconHistory className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-sm font-bold">
-              {logs && logs.length > 0
-                ? new Date(logs[0].timestamp).toLocaleDateString()
-                : "No activity"}
+            <div className="text-2xl font-bold">
+              {inactivityCheck?.lastCheckedAt}
             </div>
-            <p className="text-xs text-muted-foreground">
-              {logs && logs.length > 0 ? logs[0].action : "N/A"}
-            </p>
+            <p className="text-xs text-muted-foreground"> day(s) ago</p>
           </CardContent>
         </Card>
       </div>

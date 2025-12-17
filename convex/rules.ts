@@ -1,49 +1,49 @@
 import { v } from "convex/values";
-import { internalMutation, mutation, query } from "./_generated/server";
-import { authComponent } from "./auth";
-import { api, internal } from "./_generated/api";
-import * as React from "react";
-import { renderToStaticMarkup } from "react-dom/server";
-import AccountRecoveryEmail from "./emails/googleRecoveryEmail";
+import { decryptData } from "../src/lib/encryption";
+import { api } from "./_generated/api";
+import { action, internalAction, mutation, query } from "./_generated/server";
 import { insertAuditLog } from "./audit";
+import { authComponent } from "./auth";
+import type { Asset } from "./vault";
 
-export const checkInactivity = internalMutation({
-  args: {},
-  handler: async () => {
-    // This is where the logic to check for inactive users would go.
-    // For a hackathon MVP, we can just log that the check ran.
-    // In a real implementation, we would:
-    // 1. Query all users/rules
-    // 2. Compare last login time (from auth) with inactivityDuration
-    // 3. Trigger email/process for those who exceeded the duration
-    console.log("Checking for inactive users...");
-  },
-});
-
-export const resetInactivity = mutation({
-  args: { userId: v.id("users") },
-  handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
-    if (!user) throw new Error("Unauthorized");
-
-    // In a real implementation, this would reset the user's inactivity timer.
-    // For the hackathon MVP, we can just log the action.
-    console.log(`Resetting inactivity timer for user ${user._id}`);
-
-    // Reset the user's inactive_for_days to 0.
-    await ctx.db.patch("users", args.userId, { inactive_for_days: 0 });
-
-    await insertAuditLog(ctx, user._id, "Inactivity Reset", {});
-  },
-});
-
-export const sendReminders = internalMutation({
+export const checkInactivity = internalAction({
   args: {},
   handler: async (ctx) => {
     const user = await authComponent.getAuthUser(ctx);
     if (!user) throw new Error("Unauthorized");
 
-    console.log("Sending reminder emails to users requiring approval...");
+    const res = await ctx.runQuery(
+      api.userInactivityChecks.fetchUserInactivityCheck,
+    );
+    const rule = await ctx.runQuery(api.rules.getRule);
+    if (res) {
+      if (res.lastCheckedAt === 14) {
+        await ctx.runAction(api.reactEmail.sendUserActivityCheckEmail, {
+          userData: user,
+          subject: "Are you still there?",
+          toEmail: user.email,
+        });
+      } else if (res.lastCheckedAt > 17) {
+        await ctx.runAction(
+          api.reactEmail.sendTrustedContactActivityCheckEmail,
+          {
+            userData: user,
+            subject: "User Inactivity Alert",
+          },
+        );
+      } else {
+        if (rule && rule.inactivityDuration === res.lastCheckedAt) {
+          await ctx.runAction(api.rules.triggerDeadManSwitch);
+        }
+      }
+
+      await ctx.runMutation(api.userInactivityChecks.updateInactivity, {
+        lastCheckedAt: res.lastCheckedAt + 1,
+      });
+    } else {
+      console.log("No inactivity check record found for user.");
+    }
+    console.log("Checking for inactive users...");
   },
 });
 
@@ -78,32 +78,31 @@ export const setRule = mutation({
   },
 });
 
-export const triggerDeadManSwitch = mutation({
+export const triggerDeadManSwitch = action({
   args: {},
   handler: async (ctx) => {
     const user = await authComponent.getAuthUser(ctx);
     if (!user) throw new Error("Unauthorized");
 
-    // Convert the typed user record into a plain JS object so we can safely access
-    // runtime fields without TypeScript complaining about missing properties.
     const userData = JSON.parse(JSON.stringify(user));
 
     const contacts = await ctx.runQuery(api.contacts.getContacts);
 
-    // Fetch all assets for the user. Use a typed shape to avoid implicit any.
-    const assets = await ctx.db
-      .query("vault_items")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .collect();
+    const assets = await ctx.runQuery(api.vault.getAssets);
 
     if (!assets || assets.length === 0) {
-      await insertAuditLog(ctx, user._id, "Dead Man's Switch: No Assets", {
-        message: "No assets found to send to contacts",
+      await ctx.runMutation(api.audit.insertAuditLogMutation, {
+        action: "Dead Man's Switch: No Assets",
+        details: {
+          message: "No assets found to send to contacts",
+        },
       });
     } else {
       // Prepare and render provider-specific email template (Google first)
-      const aggregatedBackupCodes: string[] = ([] as string[]).concat(
-        ...assets.map((a: any) => a.backupCodes || [])
+      const aggregatedBackupCodes: object[] = assets.map(
+        (a: Asset) =>
+          decryptData(a.encryptedPayload, a.encryptedPayload.split("_")[1])
+            .recoveryMethods.twoFactorBackups[0],
       );
 
       const subject = `Google Account Recovery Information for ${
@@ -112,57 +111,25 @@ export const triggerDeadManSwitch = mutation({
 
       for (const contact of contacts) {
         try {
-          const html = renderToStaticMarkup(
-            React.createElement(AccountRecoveryEmail, {
-              userId: String(userData._id),
-              userData,
-              email: userData.email || contact.contactEmail || undefined,
-              fullName: userData.name,
-              accountCreated: userData.createdAt
-                ? new Date(userData.createdAt).toISOString()
-                : undefined,
-              lastLogin:
-                (userData.lastLogin &&
-                  new Date(userData.lastLogin).toISOString()) ||
-                undefined,
-              phoneNumber: userData.phoneNumber || undefined,
-              hasSecurityQuestions: !!userData.hasSecurityQuestions,
-              hasTwoFA: !!userData.hasTwoFA,
-              backupCodes: aggregatedBackupCodes,
-              recoveryLink: `${process.env.SITE_URL}/recover?user=${userData._id}`,
-              assets,
-            })
-          );
-
-          await ctx.runMutation(internal.sendEmail.sendTestEmail, {
-            toEmail: contact.contactEmail,
+          await ctx.runAction(api.reactEmail.sendAccountRecoveryEmail, {
+            assets,
+            contact,
+            userData,
+            aggregatedBackupCodes,
             subject,
-            html,
+            toEmail: contact.contactEmail,
           });
         } catch (err) {
-          await insertAuditLog(
-            ctx,
-            user._id,
-            "Dead Man's Switch: Send Failed",
-            {
+          await ctx.runMutation(api.audit.insertAuditLogMutation, {
+            action: "Dead Man's Switch: Send Failed",
+            details: {
               contactId: contact._id,
               error: String(err),
-            }
-          );
+            },
+          });
         }
       }
     }
-
-    // 1. Log the trigger
-    await insertAuditLog(ctx, user._id, "Dead Man's Switch TRIGGERED", {
-      reason: "Manual Demo Trigger",
-    });
-
-    // 2. Simulate sending package
-    await insertAuditLog(ctx, user._id, "Recovery Package Sent", {
-      recipient: "Executors",
-      method: "Email",
-    });
   },
 });
 

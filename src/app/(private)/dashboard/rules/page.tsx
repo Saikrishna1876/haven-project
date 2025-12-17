@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQuery } from "convex/react";
+import { useAction, useMutation, useQuery } from "convex/react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +12,7 @@ import { api } from "../../../../../convex/_generated/api";
 export default function RulesPage() {
   const rule = useQuery(api.rules.getRule);
   const setRule = useMutation(api.rules.setRule);
-  const triggerSwitch = useMutation(api.rules.triggerDeadManSwitch);
+  const triggerSwitch = useAction(api.rules.triggerDeadManSwitch);
 
   const [inactivityDuration, setInactivityDuration] = useState(30);
   const [approvalRequired, setApprovalRequired] = useState(true);
@@ -46,7 +46,7 @@ export default function RulesPage() {
               type="number"
               value={inactivityDuration}
               onChange={(e) => setInactivityDuration(Number(e.target.value))}
-              min={1}
+              min={20}
             />
             <p className="text-sm text-muted-foreground">
               If you don't log in for this many days, the release process will

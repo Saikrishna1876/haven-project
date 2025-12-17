@@ -12,9 +12,15 @@ import type * as audit from "../audit.js";
 import type * as auth from "../auth.js";
 import type * as contacts from "../contacts.js";
 import type * as crons from "../crons.js";
+import type * as emails_googleRecoveryEmail from "../emails/googleRecoveryEmail.js";
+import type * as emails_trustedContactActivityCheck from "../emails/trustedContactActivityCheck.js";
+import type * as emails_userActivityCheck from "../emails/userActivityCheck.js";
 import type * as http from "../http.js";
+import type * as reactEmail from "../reactEmail.js";
 import type * as rules from "../rules.js";
 import type * as sendEmail from "../sendEmail.js";
+import type * as types from "../types.js";
+import type * as userInactivityChecks from "../userInactivityChecks.js";
 import type * as vault from "../vault.js";
 
 import type {
@@ -28,9 +34,15 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   contacts: typeof contacts;
   crons: typeof crons;
+  "emails/googleRecoveryEmail": typeof emails_googleRecoveryEmail;
+  "emails/trustedContactActivityCheck": typeof emails_trustedContactActivityCheck;
+  "emails/userActivityCheck": typeof emails_userActivityCheck;
   http: typeof http;
+  reactEmail: typeof reactEmail;
   rules: typeof rules;
   sendEmail: typeof sendEmail;
+  types: typeof types;
+  userInactivityChecks: typeof userInactivityChecks;
   vault: typeof vault;
 }>;
 

@@ -25,7 +25,7 @@ export const sendTestEmail = internalMutation({
           <li>${a.name || "unnamed"}${
             a.url ? ` - <a href="${a.url}">link</a>` : ""
           }</li>
-        `
+        `,
         )
         .join("")}</ul>`;
       html = `${html}${attachmentsHtml}`;

@@ -15,18 +15,20 @@ const UserActivityCheckEmail = (props: {
   userName?: string;
   lastActiveDate?: string;
   companyName?: string;
+  siteUrl: string;
 }) => {
   const {
     userName = "there",
     lastActiveDate = "a while",
-    companyName = "Our Platform",
+    companyName = "Haven",
+    siteUrl = process.env.SITE_URL,
   } = props;
 
   return (
     <Html lang="en" dir="ltr">
       <Tailwind>
         <Head />
-        <Preview>We miss you! Come back and see what's new</Preview>
+        <Preview>We miss you!</Preview>
         <Body className="bg-gray-100 font-sans py-10">
           <Container className="bg-white mx-auto px-10 py-10 rounded-xl max-w-15-">
             {/* Header */}
@@ -56,7 +58,7 @@ const UserActivityCheckEmail = (props: {
               {/* CTA Button */}
               <Section className="text-center mb-6">
                 <Button
-                  href="https://yourplatform.com/login"
+                  href={`${siteUrl}/login`}
                   className="bg-blue-600 text-white px-8 py-3 rounded-xl text-[16px] font-medium no-underline box-border inline-block"
                 >
                   Reset the Inactivity Status
@@ -82,17 +84,15 @@ const UserActivityCheckEmail = (props: {
               <Text className="text-[12px] text-gray-500 leading-5 m-0">
                 {companyName} Inc.
                 <br />
-                123 Business Street, Suite 100
+                Pune 411014
                 <br />
-                San Francisco, CA 94105
-                <br />
-                United States
+                India
               </Text>
               <Text className="text-[12px] text-gray-500 leading-5 mt-4 m-0">
                 © {new Date().getFullYear()} {companyName}. All rights reserved.
                 <br />
                 <a
-                  href="https://yourplatform.com/privacy"
+                  href={`${siteUrl}/privacy`}
                   className="text-gray-500 underline"
                 >
                   Privacy Policy
@@ -110,6 +110,7 @@ UserActivityCheckEmail.PreviewProps = {
   userName: "Alex",
   lastActiveDate: "2 weeks",
   companyName: "Our Platform",
+  siteUrl: process.env.SITE_URL,
 };
 
 export default UserActivityCheckEmail;

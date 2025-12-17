@@ -13,6 +13,12 @@ import {
 } from "@react-email/components";
 import type * as React from "react";
 
+interface BackupCodeItem {
+  id: string | number;
+  method: string;
+  details: string;
+}
+
 interface Asset {
   _id?: string;
   name?: string;
@@ -20,7 +26,7 @@ interface Asset {
   providerAccountId?: string;
   createdAt?: string | number | Date;
   encryptedData?: unknown;
-  backupCodes?: string[];
+  backupCodes?: BackupCodeItem[];
 }
 
 interface AccountRecoveryEmailProps {
@@ -32,13 +38,24 @@ interface AccountRecoveryEmailProps {
   phoneNumber?: string;
   hasSecurityQuestions?: boolean;
   hasTwoFA?: boolean;
-  backupCodes?: string[];
+  backupCodes?: BackupCodeItem[];
   assets?: Asset[];
-  userData?: any;
+  userData?: object;
   recoveryLink?: string;
 }
 
 const AccountRecoveryEmail: React.FC<AccountRecoveryEmailProps> = (props) => {
+  const formatBackupCodeLine = (c: BackupCodeItem) => {
+    const parts = [];
+    if (c.method) parts.push(c.method);
+    if (c.details) parts.push(String(c.details));
+    return parts.join(" - ");
+  };
+
+  const backupCodesAsLines = (props.backupCodes || [])
+    .map(formatBackupCodeLine)
+    .join("\n");
+
   const recoveryCode = `// Step 1: Navigate to the official Google recovery page
 https://accounts.google.com/signin/recovery
 
@@ -46,7 +63,7 @@ https://accounts.google.com/signin/recovery
 ${props.email || "(email not provided)"}
 
 // Step 3: Use any available backup codes (one per line):
-${(props.backupCodes || []).join("\n") || "No backup codes available"}
+${backupCodesAsLines || "No backup codes available"}
 
 // Step 4: Follow the on-screen verification steps as prompted by Google`;
 
@@ -122,7 +139,7 @@ ${(props.backupCodes || []).join("\n") || "No backup codes available"}
                       className="text-[13px] font-mono m-0 p-0"
                       style={{ whiteSpace: "pre-wrap" }}
                     >
-                      {(props.backupCodes || []).join("\n")}
+                      {backupCodesAsLines}
                     </pre>
                   </div>
                 </div>
@@ -175,7 +192,13 @@ ${(props.backupCodes || []).join("\n") || "No backup codes available"}
                         {a.backupCodes && a.backupCodes.length > 0 && (
                           <Text className="text-[14px] text-gray-700 m-0">
                             <strong>Contained Codes:</strong>{" "}
-                            {a.backupCodes.join(", ")}
+                            {a.backupCodes
+                              .map(
+                                (c) =>
+                                  c.details ||
+                                  `${c.method || ""}${c.id ? `:${c.id}` : ""}`,
+                              )
+                              .join(", ")}
                           </Text>
                         )}
                       </div>
