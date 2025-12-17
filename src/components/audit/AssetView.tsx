@@ -1,9 +1,8 @@
 type Props = {
   data: any;
-  readOnly?: boolean;
 };
 
-export default function AssetView({ data, readOnly = true }: Props) {
+export default function AssetView({ data }: Props) {
   if (!data)
     return <div className="text-sm text-muted-foreground">No asset data</div>;
 
@@ -89,7 +88,7 @@ export default function AssetView({ data, readOnly = true }: Props) {
                               .split("-")
                               .map(
                                 (w: string) =>
-                                  w.charAt(0).toUpperCase() + w.slice(1)
+                                  w.charAt(0).toUpperCase() + w.slice(1),
                               )
                               .join(" ")
                           : String(b.method ?? "-")}

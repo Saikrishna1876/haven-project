@@ -1,5 +1,3 @@
-import React from "react";
-
 type Props = { data: any; isDeadMan: boolean; isContact?: boolean };
 
 export default function ContactView({

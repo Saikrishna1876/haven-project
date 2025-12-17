@@ -23,7 +23,7 @@ export const sendTestEmail = internalMutation({
         .map(
           (a: any) => `
           <li>${a.name || "unnamed"}${
-            a.url ? ` - <a href=\"${a.url}\">link</a>` : ""
+            a.url ? ` - <a href="${a.url}">link</a>` : ""
           }</li>
         `
         )

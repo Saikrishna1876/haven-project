@@ -6,6 +6,9 @@ export default defineSchema({
     email: v.string(),
     publicKey: v.optional(v.string()),
     authUserId: v.optional(v.string()), // Link to better-auth user ID
+    // Number of days the user has been inactive. Default is 0; code will
+    // initialize/reset this field when creating users or when activity occurs.
+    inactive_for_days: v.optional(v.number()),
   })
     .index("by_email", ["email"])
     .index("by_auth_user_id", ["authUserId"]),
@@ -41,8 +44,8 @@ export default defineSchema({
       v.union(
         v.literal("healthy"),
         v.literal("at_risk"),
-        v.literal("unverified")
-      )
+        v.literal("unverified"),
+      ),
     ),
     lastRecoveryAttemptAt: v.optional(v.number()),
     lastVerifiedAt: v.optional(v.number()),

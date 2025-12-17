@@ -2,10 +2,10 @@ import { v } from "convex/values";
 import { internalMutation, mutation, query } from "./_generated/server";
 import { authComponent } from "./auth";
 import { api, internal } from "./_generated/api";
-import { getContactById, getContacts } from "./contacts";
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import AccountRecoveryEmail from "./emails/google-recovery-email";
+import AccountRecoveryEmail from "./emails/googleRecoveryEmail";
+import { insertAuditLog } from "./audit";
 
 export const checkInactivity = internalMutation({
   args: {},
@@ -17,6 +17,33 @@ export const checkInactivity = internalMutation({
     // 2. Compare last login time (from auth) with inactivityDuration
     // 3. Trigger email/process for those who exceeded the duration
     console.log("Checking for inactive users...");
+  },
+});
+
+export const resetInactivity = mutation({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    const user = await authComponent.getAuthUser(ctx);
+    if (!user) throw new Error("Unauthorized");
+
+    // In a real implementation, this would reset the user's inactivity timer.
+    // For the hackathon MVP, we can just log the action.
+    console.log(`Resetting inactivity timer for user ${user._id}`);
+
+    // Reset the user's inactive_for_days to 0.
+    await ctx.db.patch("users", args.userId, { inactive_for_days: 0 });
+
+    await insertAuditLog(ctx, user._id, "Inactivity Reset", {});
+  },
+});
+
+export const sendReminders = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const user = await authComponent.getAuthUser(ctx);
+    if (!user) throw new Error("Unauthorized");
+
+    console.log("Sending reminder emails to users requiring approval...");
   },
 });
 
@@ -47,12 +74,7 @@ export const setRule = mutation({
       });
     }
 
-    await ctx.db.insert("audit_logs", {
-      userId: user._id,
-      action: "Rule Updated",
-      timestamp: Date.now(),
-      details: args,
-    });
+    await insertAuditLog(ctx, user._id, "Rule Updated", args);
   },
 });
 
@@ -75,11 +97,8 @@ export const triggerDeadManSwitch = mutation({
       .collect();
 
     if (!assets || assets.length === 0) {
-      await ctx.db.insert("audit_logs", {
-        userId: user._id,
-        action: "Dead Man's Switch: No Assets",
-        timestamp: Date.now(),
-        details: { message: "No assets found to send to contacts" },
+      await insertAuditLog(ctx, user._id, "Dead Man's Switch: No Assets", {
+        message: "No assets found to send to contacts",
       });
     } else {
       // Prepare and render provider-specific email template (Google first)
@@ -110,7 +129,7 @@ export const triggerDeadManSwitch = mutation({
               hasSecurityQuestions: !!userData.hasSecurityQuestions,
               hasTwoFA: !!userData.hasTwoFA,
               backupCodes: aggregatedBackupCodes,
-              recoveryLink: `https://yourapp.com/recover?user=${userData._id}`,
+              recoveryLink: `${process.env.SITE_URL}/recover?user=${userData._id}`,
               assets,
             })
           );
@@ -121,30 +140,28 @@ export const triggerDeadManSwitch = mutation({
             html,
           });
         } catch (err) {
-          await ctx.db.insert("audit_logs", {
-            userId: user._id,
-            action: "Dead Man's Switch: Send Failed",
-            timestamp: Date.now(),
-            details: { contactId: contact._id, error: String(err) },
-          });
+          await insertAuditLog(
+            ctx,
+            user._id,
+            "Dead Man's Switch: Send Failed",
+            {
+              contactId: contact._id,
+              error: String(err),
+            }
+          );
         }
       }
     }
 
     // 1. Log the trigger
-    await ctx.db.insert("audit_logs", {
-      userId: user._id,
-      action: "Dead Man's Switch TRIGGERED",
-      timestamp: Date.now(),
-      details: { reason: "Manual Demo Trigger" },
+    await insertAuditLog(ctx, user._id, "Dead Man's Switch TRIGGERED", {
+      reason: "Manual Demo Trigger",
     });
 
     // 2. Simulate sending package
-    await ctx.db.insert("audit_logs", {
-      userId: user._id,
-      action: "Recovery Package Sent",
-      timestamp: Date.now() + 1000,
-      details: { recipient: "Executors", method: "Email" },
+    await insertAuditLog(ctx, user._id, "Recovery Package Sent", {
+      recipient: "Executors",
+      method: "Email",
     });
   },
 });

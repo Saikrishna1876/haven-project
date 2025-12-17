@@ -1,8 +1,31 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import { IconEye, IconView360, IconViewfinder } from "@tabler/icons-react";
 import { useQuery } from "convex/react";
+import React, { useMemo, useState } from "react";
+import AssetView from "@/components/audit/AssetView";
+import ContactView from "@/components/audit/ContactView";
+import RuleView from "@/components/audit/RuleView";
+import VaultView from "@/components/audit/VaultView";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -12,30 +35,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { api } from "../../../../../convex/_generated/api";
-import { AuditLog } from "../../../../../convex/types";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { IconEye, IconView360, IconViewfinder } from "@tabler/icons-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  DialogClose,
-} from "@/components/ui/dialog";
-import AssetView from "@/components/audit/AssetView";
-import VaultView from "@/components/audit/VaultView";
-import ContactView from "@/components/audit/ContactView";
-import RuleView from "@/components/audit/RuleView";
+import type { AuditLog } from "../../../../../convex/types";
 
 export default function AuditPage() {
   const logs: AuditLog[] | undefined = useQuery(api.audit.getLogs);
