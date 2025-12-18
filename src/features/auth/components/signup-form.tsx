@@ -1,9 +1,11 @@
 "use client";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import * as z from "zod/v3";
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -18,11 +20,11 @@ import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import SocialLogin from "./social-login";
 
-type SignUpFormValues = {
-  name: string;
-  email: string;
-  password: string;
-};
+const formSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
 
 export function SignupForm({
   className,
@@ -30,7 +32,10 @@ export function SignupForm({
 }: React.ComponentProps<"div">) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const { control, handleSubmit, formState } = useForm<SignUpFormValues>({
+  const { control, handleSubmit, formState } = useForm<
+    z.infer<typeof formSchema>
+  >({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       email: "",
@@ -38,7 +43,7 @@ export function SignupForm({
     },
   });
 
-  const onSubmit = (data: SignUpFormValues) => {
+  const onSubmit = (data: z.infer<typeof formSchema>) => {
     startTransition(async () => {
       const res = await authClient.signUp.email({
         name: data.name,
@@ -65,10 +70,6 @@ export function SignupForm({
               href="/"
               className="flex flex-col items-center gap-2 font-medium"
             >
-              <div className="flex size-8 items-center justify-center rounded-md">
-                {/* <GalleryVerticalEnd className="size-6" /> */}
-                {/* Icon */}
-              </div>
               <span className="sr-only"></span>
             </Link>
             <h1 className="text-xl font-bold">

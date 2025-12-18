@@ -1,9 +1,11 @@
 "use client";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import z from "zod/v3";
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -18,10 +20,10 @@ import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import SocialLogin from "./social-login";
 
-type LoginFormValues = {
-  email: string;
-  password: string;
-};
+const formSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
 
 export function LoginForm({
   className,
@@ -29,11 +31,14 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const { control, handleSubmit, formState } = useForm<LoginFormValues>({
+  const { control, handleSubmit, formState } = useForm<
+    z.infer<typeof formSchema>
+  >({
+    resolver: zodResolver(formSchema),
     defaultValues: { email: "", password: "" },
   });
 
-  const onSubmit = (data: LoginFormValues) => {
+  const onSubmit = (data: z.infer<typeof formSchema>) => {
     startTransition(async () => {
       const res = await authClient.signIn.email({
         email: data.email,
@@ -57,10 +62,6 @@ export function LoginForm({
               href="/"
               className="flex flex-col items-center gap-2 font-medium"
             >
-              <div className="flex size-8 items-center justify-center rounded-md">
-                {/* <GalleryVerticalEnd className="size-6" /> */}
-                {/* Icon */}
-              </div>
               <span className="sr-only">
                 {process.env.NEXT_PUBLIC_APP_NAME}.
               </span>

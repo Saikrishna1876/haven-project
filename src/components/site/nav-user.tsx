@@ -17,6 +17,7 @@ import {
   sidebarMenuButtonVariants,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import type { User } from "../../../convex/auth";
 
@@ -30,7 +31,7 @@ export function NavUser({ user }: { user: User }) {
           <DropdownMenuTrigger
             className={cn(
               sidebarMenuButtonVariants({ size: "lg" }),
-              "data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground",
+              "data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             )}
           >
             <Avatar className="h-8 w-8 rounded-lg">
@@ -75,7 +76,12 @@ export function NavUser({ user }: { user: User }) {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={async () => {
+                  await authClient.signOut();
+                  window.location.href = "/";
+                }}
+              >
                 <IconLogout />
                 Log out
               </DropdownMenuItem>

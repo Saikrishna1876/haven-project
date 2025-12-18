@@ -95,6 +95,11 @@ export const updateInactivity = mutation({
         lastCheckedAt: args.lastCheckedAt,
       });
       await insertAuditLog(ctx, user._id, "Inactivity Reset", {});
+    } else {
+      await ctx.db.insert("user_inactivity_checks", {
+        userId: user._id,
+        lastCheckedAt: args.lastCheckedAt,
+      });
     }
   },
 });
