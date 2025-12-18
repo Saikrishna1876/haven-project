@@ -9,42 +9,59 @@ import type { Asset } from "./vault";
 export const checkInactivity = internalAction({
   args: {},
   handler: async (ctx) => {
-    const user = await authComponent.getAuthUser(ctx);
-    if (!user) throw new Error("Unauthorized");
-
-    const res = await ctx.runQuery(
-      api.userInactivityChecks.fetchUserInactivityCheck,
-    );
-    const rule = await ctx.runQuery(api.rules.getRule);
-    if (res) {
-      if (res.lastCheckedAt === 14) {
-        await ctx.runAction(api.reactEmail.sendUserActivityCheckEmail, {
-          userData: user,
-          subject: "Are you still there?",
-          toEmail: user.email,
-        });
-      } else if (res.lastCheckedAt > 17) {
-        await ctx.runMutation(api.userInactivityChecks.createToken);
-        await ctx.runAction(
-          api.reactEmail.sendTrustedContactActivityCheckEmail,
-          {
+    const users = await ctx.runQuery(authComponent.component.adapter.findMany, {
+      model: "user",
+      paginationOpts: {
+        cursor: null,
+        numItems: 100,
+      },
+    });
+    console.log(users);
+    for (const user of users.page) {
+      const res = await ctx.runQuery(
+        api.userInactivityChecks.fetchUserInactivityCheckByUser,
+        { user },
+      );
+      const rule = await ctx.runQuery(api.rules.getRuleByUser, { user });
+      console.log("Inactivity record:", res);
+      if (res) {
+        if (res.lastCheckedAt === 14) {
+          await ctx.runAction(api.reactEmail.sendUserActivityCheckEmail, {
             userData: user,
-            subject: "User Inactivity Alert",
-          },
-        );
-      } else {
-        if (rule && rule.inactivityDuration === res.lastCheckedAt) {
-          await ctx.runAction(api.rules.triggerDeadManSwitch);
+            subject: "Are you still there?",
+            toEmail: user.email,
+          });
+        } else if (res.lastCheckedAt === 17) {
+          const token = await ctx.runMutation(
+            api.userInactivityChecks.createToken,
+            { user },
+          );
+          await ctx.runAction(
+            api.reactEmail.sendTrustedContactActivityCheckEmail,
+            {
+              userData: user,
+              subject: "User Inactivity Alert",
+              token,
+            },
+          );
+        } else {
+          if (rule && rule.inactivityDuration === res.lastCheckedAt) {
+            await ctx.runAction(api.rules.deadManSwitchByUser, { user });
+          }
         }
-      }
 
-      await ctx.runMutation(api.userInactivityChecks.updateInactivity, {
-        lastCheckedAt: res.lastCheckedAt + 1,
-      });
-    } else {
-      console.log("No inactivity check record found for user.");
+        await ctx.runMutation(api.userInactivityChecks.updateInactivityByUser, {
+          user,
+          lastCheckedAt: res.lastCheckedAt + 1,
+        });
+      } else {
+        await ctx.runMutation(api.userInactivityChecks.updateInactivityByUser, {
+          user,
+          lastCheckedAt: 0,
+        });
+        console.log("No inactivity check record found for user.");
+      }
     }
-    console.log("Checking for inactive users...");
   },
 });
 
@@ -79,11 +96,12 @@ export const setRule = mutation({
   },
 });
 
-export const triggerDeadManSwitch = action({
-  args: {},
-  handler: async (ctx) => {
-    const user = await authComponent.getAuthUser(ctx);
-    if (!user) throw new Error("Unauthorized");
+export const deadManSwitchByUser = action({
+  args: {
+    user: v.any(),
+  },
+  handler: async (ctx, args) => {
+    const user = args.user;
 
     const userData = JSON.parse(JSON.stringify(user));
 
@@ -131,6 +149,26 @@ export const triggerDeadManSwitch = action({
         }
       }
     }
+  },
+});
+export const triggerDeadManSwitch = action({
+  args: {},
+  handler: async (ctx) => {
+    const user = await authComponent.getAuthUser(ctx);
+    if (!user) throw new Error("Unauthorized");
+    await ctx.runAction(api.rules.deadManSwitchByUser, { user });
+  },
+});
+
+export const getRuleByUser = query({
+  args: {
+    user: v.any(),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("rules")
+      .withIndex("by_user", (q) => q.eq("userId", args.user._id))
+      .first();
   },
 });
 

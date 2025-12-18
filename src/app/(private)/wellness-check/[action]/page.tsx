@@ -11,7 +11,13 @@ export default function WellnessCheckPage() {
   const token = searchParams?.get("token") || "";
   const confirm = useMutation(api.userInactivityChecks.handleConfirm);
   const cancel = useAction(api.userInactivityChecks.handleCancel);
+  const [isMounted, setIsMounted] = useState(false);
+
   const [status, setStatus] = useState<string | null>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -24,13 +30,11 @@ export default function WellnessCheckPage() {
       setStatus(null);
       try {
         if (action === "confirm") {
-          const res = (await confirm({ token })) as {
-            success?: boolean;
-          } | null;
+          const res = await confirm({ token });
           if (res?.success) setStatus("confirmed");
           else setStatus("not_found");
-        } else if (action === "cancel") {
-          const res = (await cancel({ token })) as { success?: boolean } | null;
+        } else if (action === "concern") {
+          const res = await cancel({ token });
           if (res?.success) setStatus("cancelled");
           else setStatus("not_found");
         } else {
@@ -41,6 +45,10 @@ export default function WellnessCheckPage() {
       }
     })();
   }, [action, token, confirm, cancel]);
+
+  if (!isMounted) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6">

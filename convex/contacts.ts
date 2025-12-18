@@ -43,6 +43,21 @@ export const getContacts = query({
   },
 });
 
+export const getContactsByUser = query({
+  args: {
+    user: v.any(),
+  },
+  handler: async (ctx, args) => {
+    const user = args.user;
+    if (!user) return [];
+
+    return await ctx.db
+      .query("trusted_contacts")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+  },
+});
+
 export const getContactById = query({
   args: { contactId: v.id("trusted_contacts") },
   handler: async (ctx, args) => {

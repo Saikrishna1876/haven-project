@@ -5,11 +5,11 @@ import { insertAuditLog } from "./audit";
 import { authComponent } from "./auth";
 
 export const createToken = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const user = await authComponent.getAuthUser(ctx);
-    if (!user) throw new Error("Unauthorized");
-
+  args: {
+    user: v.any(),
+  },
+  handler: async (ctx, args) => {
+    const user = args.user;
     // Generate a 6-digit numeric token as a string
     const token = Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -54,7 +54,7 @@ export const createInactivityCheck = mutation({
   },
 });
 
-export const fetchRecordByToken = mutation({
+export const fetchRecordByToken = query({
   args: {
     token: v.string(),
   },
@@ -80,12 +80,13 @@ export const fetchRecordByToken = mutation({
   },
 });
 
-export const updateInactivity = mutation({
-  args: { lastCheckedAt: v.number() },
+export const updateInactivityByUser = mutation({
+  args: {
+    user: v.any(),
+    lastCheckedAt: v.number(),
+  },
   handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
-    if (!user) throw new Error("Unauthorized");
-
+    const user = args.user;
     const record = await ctx.db
       .query("user_inactivity_checks")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
@@ -104,6 +105,18 @@ export const updateInactivity = mutation({
   },
 });
 
+export const updateInactivity = mutation({
+  args: { lastCheckedAt: v.number() },
+  handler: async (ctx, args) => {
+    const user = await authComponent.getAuthUser(ctx);
+    if (!user) throw new Error("Unauthorized");
+    await ctx.runMutation(api.userInactivityChecks.updateInactivityByUser, {
+      user,
+      lastCheckedAt: args.lastCheckedAt,
+    });
+  },
+});
+
 export const resetInactivity = mutation({
   args: {},
   handler: async (ctx) => {
@@ -117,8 +130,23 @@ export const resetInactivity = mutation({
   },
 });
 
+export const fetchUserInactivityCheckByUser = query({
+  args: {
+    user: v.any(),
+  },
+  handler: async (ctx, args) => {
+    const user = args.user;
+
+    const record = await ctx.db
+      .query("user_inactivity_checks")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .first();
+
+    return record;
+  },
+});
+
 export const fetchUserInactivityCheck = query({
-  args: {},
   handler: async (ctx) => {
     const user = await authComponent.getAuthUser(ctx);
     if (!user) throw new Error("Unauthorized");
@@ -127,6 +155,7 @@ export const fetchUserInactivityCheck = query({
       .query("user_inactivity_checks")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
       .first();
+
     return record;
   },
 });
@@ -140,7 +169,7 @@ export const handleConfirm = mutation({
       throw new Error("Invalid token");
     }
 
-    const record = await ctx.runMutation(
+    const record = await ctx.runQuery(
       api.userInactivityChecks.fetchRecordByToken,
       {
         token: args.token,
@@ -149,9 +178,29 @@ export const handleConfirm = mutation({
 
     if (record) {
       await ctx.db.patch(record._id, {
+        token: "",
         lastCheckedAt: 0,
       });
       await insertAuditLog(ctx, record.userId, "Inactivity Reset", {});
+      return { success: true };
+    }
+  },
+});
+
+export const resetToken = mutation({
+  args: {
+    user: v.any(),
+  },
+  handler: async (ctx, args) => {
+    const user = args.user;
+    const record = await ctx.db
+      .query("user_inactivity_checks")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .first();
+    if (record) {
+      await ctx.db.patch(record._id, {
+        token: "",
+      });
     }
   },
 });
@@ -165,7 +214,7 @@ export const handleCancel = action({
       throw new Error("Invalid token");
     }
 
-    const record = await ctx.runMutation(
+    const record = await ctx.runQuery(
       api.userInactivityChecks.fetchRecordByToken,
       {
         token: args.token,
@@ -174,6 +223,10 @@ export const handleCancel = action({
 
     if (record) {
       await ctx.runAction(api.rules.triggerDeadManSwitch);
+      await ctx.runMutation(api.userInactivityChecks.resetToken, {
+        user: { _id: record.userId },
+      });
+      return { success: true };
     }
   },
 });

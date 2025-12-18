@@ -6,15 +6,15 @@ const crons = cronJobs();
 
 crons.interval(
   "check-inactivity",
-  { seconds: 120 }, // Run every 60 seconds
-  internal.rules.checkInactivity
+  { hours: 24 }, // Run every 24 hours
+  internal.rules.checkInactivity,
 );
 
 // Clean up old emails from the Resend component
 crons.interval(
   "cleanup-old-emails",
   { hours: 1 },
-  internal.crons.cleanupResend
+  internal.crons.cleanupResend,
 );
 
 const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
@@ -29,7 +29,7 @@ export const cleanupResend = internalMutation({
       0,
       components.resend.lib.cleanupAbandonedEmails,
       // These generally indicate a bug, so keep them around for longer.
-      { olderThan: 4 * ONE_WEEK_MS }
+      { olderThan: 4 * ONE_WEEK_MS },
     );
   },
 });

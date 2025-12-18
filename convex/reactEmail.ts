@@ -77,7 +77,8 @@ export const sendUserActivityCheckEmail = action({
   handler: async (ctx, args) => {
     const { userData, subject, toEmail } = args;
     const lastLogin = await ctx.runQuery(
-      api.userInactivityChecks.fetchUserInactivityCheck,
+      api.userInactivityChecks.fetchUserInactivityCheckByUser,
+      { user: userData },
     );
     const html = await pretty(
       await render(
@@ -106,13 +107,17 @@ export const sendTrustedContactActivityCheckEmail = action({
   args: {
     userData: v.any(),
     subject: v.string(),
+    token: v.string(),
   },
   handler: async (ctx, args) => {
-    const { userData, subject } = args;
+    const { userData, subject, token } = args;
     const lastLogin = await ctx.runQuery(
-      api.userInactivityChecks.fetchUserInactivityCheck,
+      api.userInactivityChecks.fetchUserInactivityCheckByUser,
+      { user: userData },
     );
-    const contacts = await ctx.runQuery(api.contacts.getContacts);
+    const contacts = await ctx.runQuery(api.contacts.getContactsByUser, {
+      user: userData,
+    });
     for (const contact of contacts) {
       const html = await pretty(
         await render(
@@ -120,7 +125,7 @@ export const sendTrustedContactActivityCheckEmail = action({
             contactName: contact.contactEmail,
             userName: userData.name,
             userEmail: userData.email,
-            token: "",
+            token,
             lastActiveDate: lastLogin
               ? `${lastLogin.lastCheckedAt} day(s) ago`
               : "a while",
