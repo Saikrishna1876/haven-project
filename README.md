@@ -101,7 +101,7 @@ SITE_URL=http://localhost:3000
 ### 2. Run the Convex dev server (in a separate terminal)
 
 ```bash
-pnpm convex dev
+pnpx convex dev
 ```
 
 ### 3. Start the Next.js development server
@@ -141,11 +141,12 @@ Below is a quick‑start walkthrough for typical user flows:
    - Click **Add Contact**, fill in the required fields (name, phone, email, relationship) and save.
    - The contact data is encrypted on the server and only visible to you.
 
-3. **Configure Wellness Checks**
+3. **Add Assets**
 
-   - Go to **Wellness Check** in the private dashboard.
-   - Choose a frequency (daily, weekly, custom) and set a reminder window.
-   - The system will email you a check‑in prompt. If you miss the response window, an alert is automatically sent to all stored contacts.
+   - Navigate to the **Assets** section from the sidebar.
+
+   - Click **Add Asset**, select the files you wish to upload (e.g., photos, documents, or other relevant files), and save.
+   - Uploaded assets are stored securely and can be referenced in emergency messages.
 
 4. **Trigger an Emergency Manually**
 
@@ -189,17 +190,22 @@ The **Usage** section is intended for end‑users and developers who want to und
 
 - From the dashboard, click **Trigger Emergency** to instantly notify all stored contacts via email and SMS (if integrated).
 
+### 5. Managing Assets
+
+- Navigate to **Assets** from the sidebar.
+- Click **Add Asset**, select the files you wish to upload (e.g., photos, documents, or other relevant files), and save.
+- Uploaded assets are stored securely and can be referenced in emergency messages.
+
 ---
 
 ## Environment Variables
 
-| Variable            | Description                      | Example                             |
-| ------------------- | -------------------------------- | ----------------------------------- |
-| `CONVEX_DEPLOYMENT` | URL of your Convex deployment    | `https://your‑project.convex.cloud` |
-| `CONVEX_API_KEY`    | API key for server‑side calls    | `cvy_...`                           |
-| `NEXTAUTH_URL`      | Base URL for NextAuth callbacks  | `http://localhost:3000`             |
-| `NEXTAUTH_SECRET`   | Random secret for JWT signing    | `a1b2c3d4...`                       |
-| `RESEND_API_KEY`    | API key for Resend email service | `re_...`                            |
+| Variable                      | Description                               | Example                            |
+| ----------------------------- | ----------------------------------------- | ---------------------------------- |
+| `NEXT_PUBLIC_CONVEX_URL`      | URL of your Convex deployment (public)    | `https://dev-or-prod.convex.cloud` |
+| `NEXT_PUBLIC_CONVEX_SITE_URL` | URL of your Convex site (public)          | `https://dev-or-prod.convex.site`  |
+| `NEXT_PUBLIC_APP_NAME`        | Name of the application                   | `Haven`                            |
+| `SITE_URL`                    | Base URL for the local development server | `http://localhost:3000`            |
 
 ---
 
@@ -234,7 +240,7 @@ pnpm start
 1. Push the repository to GitHub.
 2. Import the project in Vercel and select the **Next.js** framework.
 3. Add the environment variables from the **Environment Variables** section in Vercel's dashboard.
-4. Vercel will automatically run `pnpm install && pnpm build` on each push.
+4. Vercel will automatically run `pnpm install && npx convex deploy --cmd 'npm run build'` on each push.
 
 ### Self‑Hosted
 
