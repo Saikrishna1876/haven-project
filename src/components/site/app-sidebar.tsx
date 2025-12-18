@@ -78,7 +78,7 @@ export function AppSidebar({
                 <Image
                   src={favicon}
                   alt="Logo"
-                  className="invert"
+                  className="dark:invert"
                   width={40}
                   height={40}
                 />
@@ -86,7 +86,7 @@ export function AppSidebar({
               <div
                 className={cn(
                   "flex-1 text-left text-sm leading-tight",
-                  !open ? "hidden" : "grid",
+                  !open ? "hidden" : "grid"
                 )}
               >
                 <span className="truncate font-medium">Haven</span>

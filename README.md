@@ -20,6 +20,7 @@ A **privacy‑first personal safety and wellness platform** built with **Next.js
 - [Building for Production](#building-for-production)
 - [Deployment](#deployment)
 - [Contributing](#contributing)
+- [Official Guides](#official-guides)
 - [License](#license)
 
 ---
@@ -259,6 +260,24 @@ Contributions are welcome! Please follow these steps:
 3. Make your changes and ensure linting passes (`pnpm lint`).
 4. Write tests if applicable.
 5. Open a Pull Request describing the changes.
+
+---
+
+## Official Guides
+
+For deeper understanding and advanced usage, refer to the official documentation of the core technologies used in this project:
+
+- **Next.js** – https://nextjs.org/docs
+- **Convex** – https://docs.convex.dev
+- **Tailwind CSS** – https://tailwindcss.com/docs
+- **shadcn/ui** – https://ui.shadcn.com/docs
+- **React Hook Form** – https://react-hook-form.com/get-started
+- **Zod** – https://zod.dev
+- **Better Auth** – https://github.com/convex-dev/better-auth#readme
+- **Resend (email service)** – https://resend.com/docs
+- **Vercel Deployment** – https://vercel.com/docs
+
+These guides provide comprehensive reference material, tutorials, and best‑practice recommendations.
 
 ---
 
