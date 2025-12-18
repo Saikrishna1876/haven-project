@@ -58,7 +58,7 @@ export default function Page() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {inactivityCheck?.lastCheckedAt}
+              {inactivityCheck?.lastCheckedAt || 0}
             </div>
             <p className="text-xs text-muted-foreground"> day(s) ago</p>
           </CardContent>
