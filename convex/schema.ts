@@ -5,6 +5,7 @@ export default defineSchema({
   user_inactivity_checks: defineTable({
     userId: v.string(),
     lastCheckedAt: v.number(),
+    token: v.optional(v.string()),
   }).index("by_user", ["userId"]),
   vault_items: defineTable({
     userId: v.string(), // Link to our users table or auth user id.
@@ -37,8 +38,8 @@ export default defineSchema({
       v.union(
         v.literal("healthy"),
         v.literal("at_risk"),
-        v.literal("unverified"),
-      ),
+        v.literal("unverified")
+      )
     ),
     lastRecoveryAttemptAt: v.optional(v.number()),
     lastVerifiedAt: v.optional(v.number()),
