@@ -89,17 +89,13 @@ Create a `.env.local` file at the project root (it is ignored by git). Required 
 
 ```dotenv
 # Convex
-CONVEX_DEPLOYMENT=your‑convex‑deployment-url
-CONVEX_API_KEY=your‑convex‑api‑key
+NEXT_PUBLIC_CONVEX_URL=https://dev-or-prod.convex.cloud
 
-# Auth (Better‑Auth)
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your‑random‑secret
+NEXT_PUBLIC_CONVEX_SITE_URL=https://dev-or-prod.convex.site
 
-# Resend (email service)
-RESEND_API_KEY=your‑resend‑api‑key
+NEXT_PUBLIC_APP_NAME=Haven
 
-# Optional – Vercel analytics, etc.
+SITE_URL=http://localhost:3000
 ```
 
 ### 2. Run the Convex dev server (in a separate terminal)
