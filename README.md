@@ -283,10 +283,4 @@ These guides provide comprehensive reference material, tutorials, and best‑pra
 
 ---
 
-## License
-
-This project is licensed under the **MIT License** – see the `LICENSE` file for details.
-
----
-
 _Happy coding!_
