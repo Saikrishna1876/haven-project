@@ -159,7 +159,7 @@ Below is a quick‑start walkthrough for typical user flows:
    - Each entry includes a timestamp and IP address for security monitoring.
 
 6. **Logout**
-   - Click your profile avatar in the top‑right corner and select **Logout**.
+   - Click your profile avatar in the bottom-left corner and select **Logout**.
 
 These steps cover the core interactions a user will perform on the Haven platform.
 
