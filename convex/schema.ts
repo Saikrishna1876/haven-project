@@ -38,8 +38,8 @@ export default defineSchema({
       v.union(
         v.literal("healthy"),
         v.literal("at_risk"),
-        v.literal("unverified")
-      )
+        v.literal("unverified"),
+      ),
     ),
     lastRecoveryAttemptAt: v.optional(v.number()),
     lastVerifiedAt: v.optional(v.number()),

@@ -139,7 +139,7 @@ export const handleConfirm = mutation({
       api.userInactivityChecks.fetchRecordByToken,
       {
         token: args.token,
-      }
+      },
     );
 
     if (record) {
@@ -164,7 +164,7 @@ export const handleCancel = action({
       api.userInactivityChecks.fetchRecordByToken,
       {
         token: args.token,
-      }
+      },
     );
 
     if (record) {

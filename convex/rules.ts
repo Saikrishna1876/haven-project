@@ -13,7 +13,7 @@ export const checkInactivity = internalAction({
     if (!user) throw new Error("Unauthorized");
 
     const res = await ctx.runQuery(
-      api.userInactivityChecks.fetchUserInactivityCheck
+      api.userInactivityChecks.fetchUserInactivityCheck,
     );
     const rule = await ctx.runQuery(api.rules.getRule);
     if (res) {
@@ -30,7 +30,7 @@ export const checkInactivity = internalAction({
           {
             userData: user,
             subject: "User Inactivity Alert",
-          }
+          },
         );
       } else {
         if (rule && rule.inactivityDuration === res.lastCheckedAt) {
@@ -103,7 +103,7 @@ export const triggerDeadManSwitch = action({
       const aggregatedBackupCodes: object[] = assets.map(
         (a: Asset) =>
           decryptData(a.encryptedPayload, a.encryptedPayload.split("_")[1])
-            .recoveryMethods.twoFactorBackups[0]
+            .recoveryMethods.twoFactorBackups[0],
       );
 
       const subject = `Google Account Recovery Information for ${
